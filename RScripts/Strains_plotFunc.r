@@ -29,6 +29,11 @@ strains_plot <-
       }
       finalDatList <- finalDatList[which(finalDatList[[TimeCol]] >= TimeLimit[1] & finalDatList[[TimeCol]] <= TimeLimit[2]),]
       # for smoothDf
+      if(is.list(smoothDf)){
+        suppressWarnings(
+          smoothDf <- Reduce(function(x, y) merge(x=x, y=y, by=TimeCol, all.x=T, all.y=T), smoothDf)
+        )
+      }
       smoothDf <- smoothDf[which(smoothDf[[TimeCol]] >= TimeLimit[1] & smoothDf[[TimeCol]] <= TimeLimit[2]),]
       # for IC
       IC <- lapply(IC, function(x) 
