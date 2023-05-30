@@ -24,12 +24,12 @@ strains_plot <-
     # in case TimeLimnit is specified, trunc the dataset to remove values below and above lower and upper limits respectively
     if(!is.null(TimeLimit)){ 
       # for finalDatList
-      if(is.list(finalDatList)){
+      if(class(finalDatList) != "data.frame"){
         finalDatList <- as.data.frame(finalDatList)
       }
       finalDatList <- finalDatList[which(finalDatList[[TimeCol]] >= TimeLimit[1] & finalDatList[[TimeCol]] <= TimeLimit[2]),]
       # for smoothDf
-      if(is.list(smoothDf)){
+      if(class(smoothDf) != "data.frame"){
         suppressWarnings(
           smoothDf <- Reduce(function(x, y) merge(x=x, y=y, by=TimeCol, all.x=T, all.y=T), smoothDf)
         )
