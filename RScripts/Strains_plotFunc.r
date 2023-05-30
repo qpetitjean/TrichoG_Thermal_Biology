@@ -21,25 +21,32 @@ strains_plot <-
     scaleVariable = NULL, # a list containing vectors which indicates the upper and lower value to specify the scale for each variable
     Lab = NULL) # a list of label to add on the plot for each variable
 {
+    if(class(finalDatList) != "data.frame"){
+      finalDatList <- as.data.frame(finalDatList)
+    }
+    if(class(smoothDf) != "data.frame"){
+      suppressWarnings(
+        smoothDf <- Reduce(function(x, y) merge(x=x, y=y, by=TimeCol, all.x=T, all.y=T), smoothDf)
+      )
+      if(TRUE %in% duplicated(names(smoothDf))){
+        smoothDf <- smoothDf[, -which(duplicated(names(smoothDf)))]
+      }
+    }
     # in case TimeLimnit is specified, trunc the dataset to remove values below and above lower and upper limits respectively
     if(!is.null(TimeLimit)){ 
       # for finalDatList
-      if(class(finalDatList) != "data.frame"){
-        finalDatList <- as.data.frame(finalDatList)
-      }
       finalDatList <- finalDatList[which(finalDatList[[TimeCol]] >= TimeLimit[1] & finalDatList[[TimeCol]] <= TimeLimit[2]),]
       # for smoothDf
-      if(class(smoothDf) != "data.frame"){
-        suppressWarnings(
-          smoothDf <- Reduce(function(x, y) merge(x=x, y=y, by=TimeCol, all.x=T, all.y=T), smoothDf)
-        )
-      }
       smoothDf <- smoothDf[which(smoothDf[[TimeCol]] >= TimeLimit[1] & smoothDf[[TimeCol]] <= TimeLimit[2]),]
       # for IC
       IC <- lapply(IC, function(x) 
         x[which(x[[TimeCol]] >= TimeLimit[1] & x[[TimeCol]] <= TimeLimit[2]),]
         )
        }
+    
+    if(!TempCol %in% names(smoothDf)){
+      smoothDf <- merge(smoothDf, finalDatList[,which(names(finalDatList) %in% c(TempCol, TimeCol))], by = "runTimelinef")
+    }
     
     if(TempAxis == "x") {
       # build temperature x axis
