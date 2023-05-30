@@ -259,7 +259,7 @@ strains_plot <-
       minT <- meanTempfRange[1]
       maxT <- round(meanTempfRange[2], 1)
     }
-    Tdf <-as.data.frame(cbind(Temp = meanTempf, frame = unique(smoothDf[[TimeCol]])))
+    Tdf <- as.data.frame(cbind(Temp = meanTempf, frame = unique(smoothDf[[TimeCol]])))
     if(min(Tdf[["Temp"]], na.rm = T) > 0) { 
       Pal <- colorRampPalette(c("yellow", "red"))
     }else{ 
@@ -268,7 +268,7 @@ strains_plot <-
     coloration <- Pal(meanTempfRange[2] - meanTempfRange[1] + 1)
     dfCol <- as.data.frame(cbind(Temp = seq(meanTempfRange[1], meanTempfRange[2], by = 1), coloration))
     Tdf$color <-
-      coloration[match(round(Tdf[["Temp"]]), dfCol[[TempCol]])]
+      coloration[match(round(Tdf[["Temp"]]), dfCol[["Temp"]])]
     
     # X axis ranges
     minTime <- ifelse(is.null(TimeLimit), 0, TimeLimit[1]/25/60)
