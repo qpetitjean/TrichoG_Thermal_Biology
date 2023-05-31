@@ -258,16 +258,16 @@ strains_plot <-
       maxT <- round(meanTempfRange[2], -1)
     } else {
       minT <- meanTempfRange[1]
-      maxT <- round(meanTempfRange[2], 1)
+      maxT <- round(meanTempfRange[2], 0)
     }
     Tdf <- as.data.frame(cbind(Temp = meanTempf, frame = unique(smoothDf[[TimeCol]])))
     if(min(Tdf[["Temp"]], na.rm = T) > 0) { 
-      Pal <- colorRampPalette(c("yellow", "red"))
+      Pal <- colorRampPalette(c("#FFDA00", "#8B0000"))
     }else{ 
-      Pal <- colorRampPalette(c("blue", "yellow"))
+      Pal <- colorRampPalette(c("#a2d2df", "#FFDA00"))
     }
-    coloration <- Pal(meanTempfRange[2] - meanTempfRange[1] + 1)
-    dfCol <- as.data.frame(cbind(Temp = seq(meanTempfRange[1], meanTempfRange[2], by = 1), coloration))
+    coloration <- Pal(maxT - minT + 1)
+    dfCol <- as.data.frame(cbind(Temp = seq(minT, maxT, by = 1), coloration))
     Tdf$color <-
       coloration[match(round(Tdf[["Temp"]]), dfCol[["Temp"]])]
     
