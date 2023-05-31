@@ -19,7 +19,8 @@ strains_plot <-
     variables = NULL, # a vector containing the names of variables to plot (names of columns present in both smoothDf and IC)
     colvariable = NULL, # A vector containing the color of each variable on the plot
     scaleVariable = NULL, # a list containing vectors which indicates the upper and lower value to specify the scale for each variable
-    Lab = NULL) # a list of label to add on the plot for each variable
+    Lab = NULL, # a list of label to add on the plot for each variable
+    xTick = NULL) # the increment between tick in x axis (used only if TimeLimit is set)
 {
     if(class(finalDatList) != "data.frame"){
       finalDatList <- as.data.frame(finalDatList)
@@ -277,7 +278,11 @@ strains_plot <-
       round(max(smoothDf[[TimeCol]]/25/60, na.rm = T), 0),
       TimeLimit[2]/25/60
     )
-    xscale <- pretty(c(minTime, maxTime), n = 5, bounds = TRUE)
+    if(!is.null(xTick) & !is.null(TimeLimit)){
+      xscale <- seq(minTime, maxTime, xTick)
+    } else{ 
+      xscale <- pretty(c(minTime, maxTime), n = 5, bounds = TRUE)
+    }
     xscale2 <- xscale
     xscale2[which(xscale2==0)] <- ""
     
@@ -498,26 +503,15 @@ strains_plot <-
                   col=adjustcolor(colvariable[[v]],alpha=0.15), border=NA
                   , density = NA)}
         axislab <- c(0, step/4, -step/4, step/2, -step/2, step/1.5)
+        
         if(v == 1){
-          text(rep(ifelse(
-            is.null(TimeLimit),
-            max(smoothDfNoNA[[TimeCol]], na.rm = T),
-            TimeLimit[2]
-          ), 6),
+          text(rep(maxTime*25*60, 6),
           Scale + step/100,
           "-",
           xpd = TRUE,
           adj = 0)
           
-          text(rep(ifelse(
-            is.null(TimeLimit),
-            max(smoothDfNoNA[[TimeCol]], na.rm = T),
-            TimeLimit[2]
-          ) + ifelse(
-            is.null(TimeLimit),
-            max(smoothDfNoNA[[TimeCol]], na.rm = T),
-            TimeLimit[2]
-          ) / 1520, 6),
+          text(rep(maxTime*25*60 + maxTime*25*60 / 1520, 6),
           Scale + axislab[[v]],
           Scale,
           xpd = TRUE,
@@ -526,15 +520,7 @@ strains_plot <-
           cex = 1 - length(variables)/20)
         }
         if(v > 1){
-        text(rep(ifelse(
-          is.null(TimeLimit),
-          max(smoothDfNoNA[[TimeCol]], na.rm = T),
-          TimeLimit[2]
-        ) + ifelse(
-          is.null(TimeLimit),
-          max(smoothDfNoNA[[TimeCol]], na.rm = T),
-          TimeLimit[2]
-        ) / 1520, 5),
+        text(rep(maxTime*25*60 + maxTime*25*60 / 1520, 5),
         Scale[-1] + axislab[[v]],
         Scale[-1],
         xpd = TRUE,
