@@ -18,9 +18,12 @@ strains_plot <-
     IC = SplittedIC, # the dataset containing 95%Ci
     variables = NULL, # a vector containing the names of variables to plot (names of columns present in both smoothDf and IC)
     colvariable = NULL, # A vector containing the color of each variable on the plot
-    scaleVariable = NULL, # a list containing vectors which indicates the upper and lower value to specify the scale for each variable
+    scaleVariable = NULL, # a list containing vectors which indicates the upper, lower value and step to specify the scale for each variable (should be consistent across variable to ensure y axis grid alignement)
     Lab = NULL, # a list of label to add on the plot for each variable
-    xTick = NULL) # the increment between tick in x axis (used only if TimeLimit is set)
+    cex.lab = 1, # the size of the variable label 
+    xTick = NULL,# the increment between tick in x axis (used only if TimeLimit is set)
+    InnerSpace = 0.55, # adjust the space between the plot containing the trend and the detected individual
+    YlabSpace = 1) # a multiplying factor to adjust the space between the y axis label
 {
     if(class(finalDatList) != "data.frame"){
       finalDatList <- as.data.frame(finalDatList)
@@ -294,9 +297,11 @@ strains_plot <-
       corners = par("usr") # Gets the four corners of plot area (x1, x2, y1, y2)
       par(xpd = TRUE) #Draw outside plot area
       
-     if(!is.null(TempScale)){
+     if(!is.null(TempScale) & length(TempScale) == 2){
         yscale <- pretty(c(TempScale[1], TempScale[2]), n = 5, bounds = TRUE)
-      }else{
+      }else if(!is.null(TempScale) & length(TempScale) == 3) {
+        yscale <- seq(from = TempScale[1], to = TempScale[2], by = TempScale[3])
+      } else{
       if(minT < 0 ){ 
         #if(minT < -8){ 
         #  yscale <- c(seq(floor(minT), maxT+5, by = 5))
@@ -323,7 +328,7 @@ strains_plot <-
           xscale[1]*25*60,
           xscale[length(xscale)]*25*60
         ),
-        ylim = c(yscale[1], maxT + 5),
+        ylim = c(yscale[1], ifelse(!is.null(TempScale), yscale[length(yscale)], maxT+5)),
       )
       
        # add temperature curve
@@ -351,7 +356,7 @@ strains_plot <-
           xscale[1],
           xscale[length(xscale)]
         ),
-        ylim = c(yscale[1], maxT+5),
+        ylim = c(yscale[1], ifelse(!is.null(TempScale), yscale[length(yscale)], maxT+5)),
       )
       
       title(ylab="Temperature (\u00B0C)", line=1.5, cex.lab=1.2, family="sans")
@@ -362,7 +367,7 @@ strains_plot <-
         x0 = xscale[1],
         y0 = yscale[1],
         x1 = xscale[1],
-        y1 = maxT+5
+        y1 = ifelse(!is.null(TempScale), yscale[length(yscale)], maxT+5)
       )
       
       text(
@@ -434,7 +439,7 @@ strains_plot <-
       # add variable  
       linepar <- c(rep(1.8, 3), rep(2.8, 3))
       #IC <- base::split(IC, IC[["customfunc"]])
-      for (v in seq(length(variables))){ 
+      for (v in seq_along(variables)){ 
         smoothDf[[variables[[v]]]][which(is.infinite(smoothDf[[variables[[v]]]]))] <- NA
         smoothDfNoNA <- list()
         if(length(which(is.na(smoothDf[[variables[[v]]]])== TRUE)) > 0){
@@ -518,10 +523,9 @@ strains_plot <-
           col = colvariable[[v]], 
           pos = 4,
           cex = 1 - length(variables)/20)
-        }
-        if(v > 1){
+        } else if(v > 1){
         text(rep(maxTime*25*60 + maxTime*25*60 / 1520, 5),
-        Scale[-1] + axislab[[v]],
+        Scale[-1] + axislab[[v]] * YlabSpace,
         Scale[-1],
         xpd = TRUE,
         col = colvariable[[v]], 
@@ -530,9 +534,9 @@ strains_plot <-
         }
         usrpar <- rep(c(Scale[3] + step/2,  Scale[5] + step/2, Scale[1] + step/3), 2)
         if(is.null(Lab)){
-          mtext(variables[[v]], side = 4, line = linepar[[v]], at = usrpar[[v]], col = colvariable[[v]], cex=1.2, family="sans")
+          mtext(variables[[v]], side = 4, line = linepar[[v]], at = usrpar[[v]], col = colvariable[[v]], cex=cex.lab, family="sans")
         } else {
-          mtext(Lab[[v]], side = 4, line = linepar[[v]],  at = usrpar[[v]], col = colvariable[[v]], cex=1.2, family="sans")
+          mtext(Lab[[v]], side = 4, line = linepar[[v]],  at = usrpar[[v]], col = colvariable[[v]], cex=cex.lab, family="sans")
         }
       }
       }
@@ -620,7 +624,7 @@ strains_plot <-
     
     par(fig=c(0,1,0,0.88))
     graphT()
-    par(fig=c(0,0.99,0.55,1), new=TRUE)
+    par(fig=c(0,0.99,InnerSpace,1), new=TRUE) # y1 (third value) should be changed depending on the display support (e.g., rmd, pkgdown)
     graphRID()
     par <- opar
     
