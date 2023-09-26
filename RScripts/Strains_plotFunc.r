@@ -500,8 +500,8 @@ strains_plot <-
         # add variable smoothed line(s)
         lines(smoothDfNoNA[[variables[[v]]]] ~ smoothDfNoNA[[TimeCol]], col =  colvariable[[v]])
         if(!is.null(IC)){
-          IC[[variables[[v]]]]$`2.5%.smoothed` <- MoveR::slidWindow(IC[[variables[[v]]]]$"2.5%", Tstep = 4, customFunc = function(x) mean(x, na.rm = T))
-          IC[[variables[[v]]]]$`97.5%.smoothed` <- MoveR::slidWindow(IC[[variables[[v]]]]$"97.5%", Tstep = 4, customFunc = function(x) mean(x, na.rm = T))
+          IC[[variables[[v]]]]$`2.5%.smoothed` <- MoveR::slidWindow(IC[[variables[[v]]]]$"2.5%", Tstep = 4, statistic = "mean", na.rm = T)
+          IC[[variables[[v]]]]$`97.5%.smoothed` <- MoveR::slidWindow(IC[[variables[[v]]]]$"97.5%", Tstep = 4, statistic = "mean", na.rm = T)
           IC$temporaryNoNA <- na.omit(IC[[variables[[v]]]])
           polygon(x = c(IC$temporaryNoNA[[TimeCol]], rev(IC$temporaryNoNA[[TimeCol]])),
                   y = c(IC$temporaryNoNA$`2.5%.smoothed`, rev(IC$temporaryNoNA$`97.5%.smoothed`)), 
@@ -549,8 +549,9 @@ strains_plot <-
     nbrIndRelative <- nbrInd /nbrIndcounted
     # Compute the mean relative number of ID per frame using sliding window
     nbrIndRelativeMean <- MoveR::slidWindow(nbrIndRelative,
-                                  Tstep = 100 * 25, function (x)
-                                    mean(x, na.rm = T))
+                                  Tstep = 100 * 25, 
+                                  statistic = "mean", 
+                                  na.rm = T)
     
     # add the smoothed relative number of ID per frame to the previous plot 
     # compute range of the axis and round them
