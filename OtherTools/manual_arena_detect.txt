@@ -1,0 +1,116 @@
+/**************************************************************************************************
+ * ImageJ Macro: Arena Contour Detection and Distance Mapping
+ * -----------------------------------------------------------------------------------------------
+ * Description:
+ * This macro processes grayscale images to detect manually drawn arena contours and create 
+ * distance maps. 
+ * It allows the user to:
+ *  - Choose an image format (.png, .jpeg, .tif, .bmp).
+ *  - Manually draw the arena contours on each image.
+ *  - Automatically convert the drawn region to a binary mask with a uniform white color inside.
+ *  - Generate a distance map after contour detection.
+ *  - Save the processed image as both a text file (distance map data) and a TIFF file.
+ *
+ * Author: Quentin PETITJEAN
+ * Date: 26/02/2025
+ *
+ * -----------------------------------------------------------------------------------------------
+ * Usage Instructions:
+ * 1. Run the macro in ImageJ/Fiji.
+ * 2. Select the input folder containing images.
+ * 3. Select the output folder for saving results.
+ * 4. Choose an image format (e.g., .png, .jpeg).
+ * 5. For each image:
+ *    - Manually draw the arena contours.
+ *    - Click OK to proceed with the processing.
+ * 6. The macro will automatically save the processed image in the output folder.
+ *
+ * -----------------------------------------------------------------------------------------------
+ * Output Files:
+ * - [filename]_DistMap.txt → Distance Map Data
+ * - [filename].tif → Processed Image in TIFF format
+ *
+ **************************************************************************************************/
+
+// Specify global variables
+input = getDirectory("Input");
+output = getDirectory("Output");
+
+// Specify some parameters
+Dialog.create("Choose Image Format");
+Dialog.addChoice("Select Format:", newArray(".png", ".jpeg", ".tif", ".bmp"), ".png");
+Dialog.show();
+suffix = Dialog.getChoice(); // User-selected format
+
+print("Input Directory: " + input);
+print("Output Directory: " + output);
+print("Selected file format: " + suffix);
+
+processFolder(input);
+
+// Scan folders/subfolders/files to locate files with the correct suffix
+function processFolder(input) {
+    list = getFileList(input);
+    if (lengthOf(list) == 0) {
+        print("No files found in the selected directory.");
+        return;
+    }
+
+    for (i = 0; i < lengthOf(list); i++) {
+        if (endsWith(list[i], suffix)) {
+            print("Processing file: " + list[i]);
+            processFile(input, output, list[i]);
+        } else {
+            print("Skipping file: " + list[i] + " (format does not match)");
+        }
+    }
+}
+
+function processFile(input, output, file) {
+    filePath = input + file;
+    print("Opening file: " + filePath);
+
+    // Attempt to open the file and check for success
+    open(filePath);
+    if (isOpen(file) == 0) {
+        print("Failed to open file: " + filePath);
+        return;
+    }
+
+    // Draw the arena contours
+    waitForUser("Draw the arena contours, then click OK");
+
+    // Clear outside the drawn contours
+    run("Clear Outside");
+    run("8-bit");
+
+    // Set the inside of the mask to black (to avoid detecting particles)
+    setColor(255, 255, 255); // Set color to white
+    run("Fill");
+
+    // Convert to binary mask
+    run("Convert to Mask");
+    run("Distance Map");
+
+    // Remove file extension from output file name
+    baseName = replace(file, suffix, "");
+    outputFileName = output + baseName + "_DistMap.txt";
+    outputImageName = output + baseName + ".tif";
+
+    // Save the processed image
+    saveAs("Text Image", outputFileName);
+    saveAs("Tiff", outputImageName);
+
+    print("Processed and saved: " + outputFileName);
+    close("*");
+}
+
+function isOpen(fileName) {
+    titles = getList("image.titles");
+    for (j = 0; j < lengthOf(titles); j++) {
+        if (titles[j] == fileName) return 1;
+    }
+    return 0;
+}
+
+print("Done!");
