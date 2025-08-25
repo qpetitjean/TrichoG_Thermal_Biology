@@ -1,8 +1,43 @@
-##########################
-#       plot data        #  
-##########################
-
-##### visualization activity, nb detected ind, temperature
+#' @title Plot temporal trends of Trichogramma movement metrics along temperature ramp
+#'
+#' @description 
+#' Generates a multi-layered plot showing temporal trends in smoothed movement metrics alongside 
+#' temperature ramps and detection rates of tracked individuals. The function is designed to visualize 
+#' thermal sensitivity and behavioral responses at the assay level. It allows customization of axes, 
+#' variable scaling, color schemes, and inclusion of bootstrapped 95% confidence intervals.
+#'
+#' @param finalDatList Data frame of the cleaned tracking dataset, used to calculate the relative number of detected individuals.
+#' @param smoothDf Data frame or list of data frames containing smoothed movement metrics over time.
+#' @param TempAxis Character string indicating the axis where temperature should be plotted ("x" or "y").
+#' @param TempCol Name of the column in `smoothDf` or `finalDatList` containing temperature data.
+#' @param TempScale Optional numeric vector of 2 or 3 values to define the temperature axis range and tick spacing.
+#' @param TimeCol Name of the column representing time (usually "runTimelinef").
+#' @param TimeLimit Optional numeric vector of two values defining the time range to display (in frames).
+#' @param colTemp Optional color for the temperature line. If NULL, a gradient color palette is used.
+#' @param nbrIndcounted Integer representing the manually counted number of individuals in the video.
+#' @param IC List of data frames containing 95% confidence intervals for each metric.
+#' @param variables Character vector of metric names to be plotted (must match column names in both `smoothDf` and `IC`).
+#' @param colvariable Character vector of colors for each variable line in the plot.
+#' @param scaleVariable Optional list of numeric vectors defining axis scale for each variable (lower, upper, step).
+#' @param Lab Optional list of axis labels for each variable (default uses variable names).
+#' @param cex.lab Numeric, size of variable labels on the plot.
+#' @param xTick Optional numeric value for spacing between x-axis ticks (used only if `TimeLimit` is set).
+#' @param InnerSpace Numeric, adjusts vertical spacing between the main plot and detected individuals panel.
+#' @param YlabSpace Numeric, multiplier to adjust vertical spacing between variable labels and axes.
+#'
+#' @return A composite plot including: 
+#' - the temperature ramp over time,
+#' - smoothed trends of movement metrics (with optional CI),
+#' - and the relative number of detected individuals.
+#'
+#' @details 
+#' The function dynamically calculates appropriate tick marks and axis scales based on provided 
+#' temperature and metric values. Smoothed trends are overlaid with semi-transparent confidence envelopes 
+#' when available, and variables are aligned to a common time axis expressed in minutes.
+#'
+#' @author Quentin PETITJEAN
+#'
+#' @export
 
 strains_plot <-
   function(
