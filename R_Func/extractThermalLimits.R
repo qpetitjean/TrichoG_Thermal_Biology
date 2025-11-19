@@ -177,10 +177,9 @@ extractThermalLimits <- function(
       SmoothedResCIMetric$runTimelinef <= 110 * 60 * frameRate
   ], na.rm = TRUE)
   
-  maxValue <-
-    SmoothedResCIMetric[which(SmoothedResCIMetric[["SmoothedMean"]] == 
-                                max(SmoothedResCIMetric[["SmoothedMean"]]
-                                    [which(SmoothedResCIMetric[["runTimelinef"]] <= 110 * 60 * frameRate)], na.rm = T)), ]
+  maxValue <- max(SmoothedResCIMetric$SmoothedMean[
+    SmoothedResCIMetric$runTimelinef <= 110 * 60 * frameRate
+  ], na.rm = TRUE)
   
   outDf <- data.frame(
     Folder = folder,
@@ -196,8 +195,7 @@ extractThermalLimits <- function(
     RecoveryTime = ifelse(Ramp == "Cold", plateauTime[2], NA),
     RecoveryValue = ifelse(Ramp == "Cold", plateauMetric[2], NA),
     meanValue = meanValue,
-    maxValue = maxValue$SmoothedMean,
-    maxValueTime = maxValue$runTimelinef,
+    maxValue = maxValue,
     MetricBased = metricName
   )
   
