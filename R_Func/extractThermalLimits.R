@@ -184,59 +184,58 @@ extractThermalLimits <- function(metricName,
     userChoices <- readRDS(configPath)
     BP <- userChoices[[strainName]][[folder]][[metricName]]$nBreakpoints
     SelectedPlateau <- userChoices[[strainName]][[folder]][[metricName]]$SelectedPlateau
+  }
+  if (!interactive &
+      (
+        grepl("^na$|0|NA", BP, ignore.case = TRUE) |
+        grepl("^na$|0|NA", SelectedPlateau, ignore.case = TRUE)
+      )) {
+    outDf <- data.frame(
+      Folder = folder,
+      Strain = strainName,
+      Ramp = Ramp,
+      CTMax = NA,
+      CTMin = NA,
+      CTMaxTime_frame = NA,
+      CTMinTime_frame = NA,
+      CTMaxValue = NA,
+      CTMinValue = NA,
+      RecoveryTemp = NA,
+      RecoveryTime = NA,
+      RecoveryValue = NA,
+      meanValue = meanValue,
+      maxValue = maxValue,
+      MetricBased = metricName
+    )
+  } else{
+    # Segment with stored number of breakpoints
+    Segmod <- segmented::segmented(mod, seg.Z = ~ x, npsi = BP)
+    breaks <- Segmod$psi[, 2]
+    breakpoints <- do.call("rbind", lapply(breaks, function(j) {
+      SmoothedResCIMetric[which.min(abs(SmoothedResCIMetric$runTimelinef - round(j))), ]
+    }))
     
-    if (!interactive &
-        (
-          grepl("^na$|0|NA", BP, ignore.case = TRUE) |
-          grepl("^na$|0|NA", SelectedPlateau, ignore.case = TRUE)
-        )) {
-      outDf <- data.frame(
-        Folder = folder,
-        Strain = strainName,
-        Ramp = Ramp,
-        CTMax = NA,
-        CTMin = NA,
-        CTMaxTime_frame = NA,
-        CTMinTime_frame = NA,
-        CTMaxValue = NA,
-        CTMinValue = NA,
-        RecoveryTemp = NA,
-        RecoveryTime = NA,
-        RecoveryValue = NA,
-        meanValue = meanValue,
-        maxValue = maxValue,
-        MetricBased = metricName
-      )
-    } else{
-      # Segment with stored number of breakpoints
-      Segmod <- segmented::segmented(mod, seg.Z = ~ x, npsi = BP)
-      breaks <- Segmod$psi[, 2]
-      breakpoints <- do.call("rbind", lapply(breaks, function(j) {
-        SmoothedResCIMetric[which.min(abs(SmoothedResCIMetric$runTimelinef - round(j))), ]
-      }))
-      
-      Plateaux <- c(list(c(0, breakpoints$runTimelinef[1])), lapply(seq_len(nrow(breakpoints)), function(j) {
-        if (j == nrow(breakpoints)) {
-          c(breakpoints$runTimelinef[j],
-            max(SmoothedResCIMetric$runTimelinef))
-        } else {
-          c(breakpoints$runTimelinef[j],
-            breakpoints$runTimelinef[j + 1])
-        }
-      }))
-      # Extract plateau limits
-      PlateEdges <- breakpoints[breakpoints$runTimelinef %in% Plateaux[[SelectedPlateau]], ]
-      
-      if (all(c("X2.5.", "X97.5.") %in% names(SmoothedResCIMetric))) {
-        deviation <- getDeviation(SmoothedResCIMetric, PlateEdges, Ramp, frameRate)
-        plateauTemp <- deviation$plateauTemp
-        plateauTime <- deviation$plateauTime
-        plateauMetric <- deviation$plateauMetric
+    Plateaux <- c(list(c(0, breakpoints$runTimelinef[1])), lapply(seq_len(nrow(breakpoints)), function(j) {
+      if (j == nrow(breakpoints)) {
+        c(breakpoints$runTimelinef[j],
+          max(SmoothedResCIMetric$runTimelinef))
       } else {
-        plateauTemp <- PlateEdges$Temp
-        plateauTime <- PlateEdges$runTimelinef
-        plateauMetric <- PlateEdges$SmoothedMean
+        c(breakpoints$runTimelinef[j],
+          breakpoints$runTimelinef[j + 1])
       }
+    }))
+    # Extract plateau limits
+    PlateEdges <- breakpoints[breakpoints$runTimelinef %in% Plateaux[[SelectedPlateau]], ]
+    
+    if (all(c("X2.5.", "X97.5.") %in% names(SmoothedResCIMetric))) {
+      deviation <- getDeviation(SmoothedResCIMetric, PlateEdges, Ramp, frameRate)
+      plateauTemp <- deviation$plateauTemp
+      plateauTime <- deviation$plateauTime
+      plateauMetric <- deviation$plateauMetric
+    } else {
+      plateauTemp <- PlateEdges$Temp
+      plateauTime <- PlateEdges$runTimelinef
+      plateauMetric <- PlateEdges$SmoothedMean
     }
     # store results into a df
     outDf <- data.frame(
@@ -257,5 +256,6 @@ extractThermalLimits <- function(metricName,
       MetricBased = metricName
     )
   }
+  
   return(outDf)
 }
