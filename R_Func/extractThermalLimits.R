@@ -114,7 +114,7 @@ extractThermalLimits <- function(metricName,
       }
       
       BP <- readline("Expected number of breakpoints: ")
-      if (grepl("^na$|0|NA", BP, ignore.case = TRUE))
+      if (is.na(BP)|grepl("^na$|0", BP, ignore.case = TRUE))
         break
       BP <- as.integer(BP)
       Segmod <- segmented::segmented(mod, seg.Z = ~ x, npsi = BP)
@@ -127,25 +127,7 @@ extractThermalLimits <- function(metricName,
       if (tolower(satisfied) == "y")
         break
     }
-    
-    if (interactive & grepl("^na$|0|NA", BP, ignore.case = TRUE)) {
-      outDf <- data.frame(
-        Folder = folder,
-        Strain = strainName,
-        Ramp = Ramp,
-        CTMax = NA,
-        CTMin = NA,
-        CTMaxTime_frame = NA,
-        CTMinTime_frame = NA,
-        CTMaxValue = NA,
-        CTMinValue = NA,
-        RecoveryTemp = NA,
-        RecoveryTime = NA,
-        RecoveryValue = NA,
-        meanValue = meanValue,
-        maxValue = maxValue,
-        MetricBased = metricName
-      )
+    if (interactive & (is.na(BP)|grepl("^na$|0", BP, ignore.case = TRUE))) {
       BP <- NA
       SelectedPlateau <- NA
     } else{
@@ -179,11 +161,8 @@ extractThermalLimits <- function(metricName,
     BP <- userChoices[[strainName]][[folder]][[metricName]]$nBreakpoints
     SelectedPlateau <- userChoices[[strainName]][[folder]][[metricName]]$SelectedPlateau
   }
-  if (!interactive &
-      (
-        grepl("^na$|0|NA", BP, ignore.case = TRUE) |
-        grepl("^na$|0|NA", SelectedPlateau, ignore.case = TRUE)
-      )) {
+  if ((is.na(BP)|grepl("^na$|0", BP, ignore.case = TRUE)) |
+      is.na(SelectedPlateau)|grepl("^na$|0", SelectedPlateau, ignore.case = TRUE)) {
     outDf <- data.frame(
       Folder = folder,
       Strain = strainName,
