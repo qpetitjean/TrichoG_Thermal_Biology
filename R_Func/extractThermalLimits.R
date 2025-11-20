@@ -92,13 +92,7 @@ extractThermalLimits <- function(metricName,
       par(mfrow = c(1, 1))
       plot(
         SmoothedResCIMetric$SmoothedMean ~ SmoothedResCIMetric$runTimelinef,
-        ylim = c(0, max(
-          c(
-            SmoothedResCIMetric$X2.5.,
-            SmoothedResCIMetric$SmoothedMean
-          ),
-          na.rm = TRUE
-        )),
+        ylim = c(0, max(SmoothedResCIMetric$SmoothedMean, na.rm = TRUE) + max(SmoothedResCIMetric$SmoothedMean, na.rm = TRUE)*20/100),
         main = paste(folder, ":", metricName),
         type = "l",
         col = Colorvec[[which(metricList == metricName)]]
