@@ -146,12 +146,12 @@ extractThermalLimits <- function(metricName,
         }
       }))
       print(Plateaux)
-      SelectedPlateau <- readline("Select plateau (list index): ")
+      SelectedPlateau <- readline("Select plateau (list index, you can merge plateaux using ','): ")
     }
     # Save user choices to RDS for reproducibility
     userChoices <- list()
     if (file.exists(configPath)) {
-      userChoices <- readRDS(configPath)
+      unlink(configPath)
     }
     userChoices[[strainName]][[folder]][[metricName]] <- list(nBreakpoints = BP, SelectedPlateau = SelectedPlateau)
     saveRDS(userChoices, configPath)
