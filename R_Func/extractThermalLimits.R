@@ -146,7 +146,7 @@ extractThermalLimits <- function(metricName,
         }
       }))
       print(Plateaux)
-      SelectedPlateau <- as.numeric(readline("Select plateau (list index): "))
+      SelectedPlateau <- readline("Select plateau (list index): ")
     }
     # Save user choices to RDS for reproducibility
     userChoices <- list()
@@ -197,9 +197,27 @@ extractThermalLimits <- function(metricName,
           breakpoints$runTimelinef[j + 1])
       }
     }))
-    # Extract plateau limits
-    PlateEdges <- breakpoints[breakpoints$runTimelinef %in% Plateaux[[SelectedPlateau]], ]
     
+    if(!grepl(",", SelectedPlateau)){
+      SelectedPlateau <- as.numeric(SelectedPlateau)
+      # Extract plateau limits
+      PlateEdges <- breakpoints[breakpoints$runTimelinef %in% Plateaux[[SelectedPlateau]], ]
+    }else{ 
+      toMerge <- sort(as.numeric(unlist(strsplit(SelectedPlateau, ","))))
+     if(length(toMerge)>2){
+       toMerge <- c(toMerge[1], toMerge[length(toMerge)])
+     }
+      # Extract plateau limits
+      PlateMerged <- unlist(lapply(1:length(toMerge), function(x){
+        if(x == 1){
+          min(Plateaux[[toMerge[x]]])
+        }else{
+          max(Plateaux[[toMerge[x]]])
+        }
+      }))
+      PlateEdges <- breakpoints[breakpoints$runTimelinef %in% PlateMerged, ]
+    }
+
     if (all(c("X2.5.", "X97.5.") %in% names(SmoothedResCIMetric))) {
       deviation <- getDeviation(SmoothedResCIMetric, PlateEdges, Ramp, frameRate)
       plateauTemp <- deviation$plateauTemp
