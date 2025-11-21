@@ -85,7 +85,9 @@ extractThermalLimits <- function(metricName,
                                                        SmoothedResCIMetric$runTimelinef <= 110 * 60 * frameRate], na.rm = TRUE)
   
   maxValue <- max(SmoothedResCIMetric$SmoothedMean[SmoothedResCIMetric$runTimelinef <= 110 * 60 * frameRate], na.rm = TRUE)
-  
+  maxValueTime <- max(SmoothedResCIMetric$runTimelinef[SmoothedResCIMetric$runTimelinef <= 110 * 60 * frameRate & SmoothedResCIMetric$SmoothedMean == maxValue], na.rm = TRUE)
+  maxValueTemp <- max(SmoothedResCIMetric$Temp[SmoothedResCIMetric$runTimelinef == maxValueTime], na.rm = TRUE)
+
   # iterate to find best segmented model based on expected number of breakpoint
   if (interactive) {
     for (i in 1:1000) {
@@ -178,6 +180,8 @@ extractThermalLimits <- function(metricName,
       RecoveryValue = NA,
       meanValue = meanValue,
       maxValue = maxValue,
+      maxValueTime = maxValueTime,
+      maxValueTemp = maxValueTemp,
       MetricBased = metricName
     )
   } else{
@@ -244,6 +248,8 @@ extractThermalLimits <- function(metricName,
       RecoveryValue = ifelse(Ramp == "Cold", plateauMetric[2], NA),
       meanValue = meanValue,
       maxValue = maxValue,
+      maxValueTime = maxValueTime,
+      maxValueTemp = maxValueTemp,
       MetricBased = metricName
     )
   }
